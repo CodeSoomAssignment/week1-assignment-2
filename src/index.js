@@ -68,7 +68,7 @@ function render(param = init) {
         ...param, prev: count, symbol: currentSymbol, flag: true,
       });
     }
-    if (symbol) operator(currentSymbol);
+    operator(currentSymbol);
   }
 
   const element = (
