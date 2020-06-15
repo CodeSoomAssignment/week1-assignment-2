@@ -20,66 +20,57 @@ function createElement(tagName, props, ...children) {
   return element;
 }
 
-const init = {
-  count: 0,
-  prev: 0,
-  symbol: undefined,
-  flag: false,
+function defaultFunction(x, y) {
+  return x || y;
+}
+
+const operationFunctions = {
+  '+': (x, y) => x + y,
+  '-': (x, y) => x - y,
+  '*': (x, y) => x * y,
+  '/': (x, y) => x / y,
 };
 
-function render(param = init) {
-  const {
-    count, prev, symbol, flag,
-  } = param;
-  console.log(param);
-  function showNum(i) {
-    if (count === 0) {
-      render({
-        ...param, count: i,
-      });
-    }
-    if (flag === true) {
-      render({
-        ...param, count: i, flag: false,
-      });
-    }
-    if (count !== 0 && flag !== true) {
-      render({
-        ...param, count: count * 10 + i,
-      });
-    }
+function calculate(operator, accumulator, number) {
+  return (operationFunctions[operator] || defaultFunction)(accumulator, number);
+}
+
+const initialState = {
+  accumulator: 0,
+  number: 0,
+  operatoor: '',
+};
+
+function render({ accumulator, number, operator }) {
+  function handleClickReset() {
+    render(initialState);
   }
 
-  function operator(currentSymbol) {
-    const opFlag = { symbol: currentSymbol, flag: true };
-    const opKeyObj = {
-      '+': { count: prev + count, prev: prev + count, ...opFlag },
-      '-': { count: prev - count, prev: prev - count, ...opFlag },
-      '*': { count: prev * count, prev: prev * count, ...opFlag },
-      '/': { count: prev / count, prev: prev / count, ...opFlag },
-      '=': { count: prev, prev: 0, flag: false },
-    };
-    render(opKeyObj[symbol]);
+  function handleClickNumber(value) {
+    render({
+      accumulator,
+      number: number * 10 + value,
+      operator,
+    });
   }
 
-  function operation(currentSymbol) {
-    if (!symbol) {
-      render({
-        ...param, prev: count, symbol: currentSymbol, flag: true,
-      });
-    }
-    operator(currentSymbol);
+  function handleClickOperator(value) {
+    render({
+      accumulator: calculate(operator, accumulator, number),
+      number: 0,
+      operator: value,
+    });
   }
 
   const element = (
     <div>
       <p>간단 계산기</p>
-      <p>{count}</p>
+      <p>{number || accumulator}</p>
       <div>
         <p>
           {
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((i) => (
-              <button type="button" onClick={() => showNum(i)}>
+              <button type="button" onClick={() => handleClickNumber(i)}>
                 {i}
               </button>
             ))
@@ -90,11 +81,14 @@ function render(param = init) {
         <p>
           {
             ['+', '-', '*', '/', '='].map((i) => (
-              <button type="button" onClick={() => operation(i)}>
+              <button type="button" onClick={() => handleClickOperator(i)}>
                 {i}
               </button>
             ))
           }
+          <button type="button" onClick={handleClickReset}>
+            reset
+          </button>
         </p>
       </div>
     </div>
@@ -105,4 +99,4 @@ function render(param = init) {
   document.getElementById('app').appendChild(element);
 }
 
-render();
+render(initialState);
